@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}VIP - Home{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Left Column: Login & Registration -->
+    <div class="left-column">
+        {% if session.get('user') %}
+            <p>Welcome, {{ session.get('user') }}!</p>
+            
+            <div class="user-info">
+                <p class="welcome-text">Great to see you back! We hope you enjoyed your last order.</p>
+                
+                <div class="last-order">
+                    <h3>Your Last Order</h3>
+                    {% if last_order %}
+                        <p>Ordered on {{ last_order.created_at }}:</p>
+                        <ul>
+                            {% for item in last_order_items %}
+                                <li>{{ item.quantity }}x {{ item.name }}</li>
+                            {% else %}
+                                <li>No items recorded.</li>
+                            {% endfor %}
+                        </ul>
+                        <p class="order-status">Status: {{ last_order.status }}</p>
+                        <p><a href="{{ url_for('view_order', order_id=last_order.id) }}">View last receipt</a></p>
+                    {% else %}
+                        <p>You have no previous orders yet.</p>
+                        <p><a href="{{ url_for('cart') }}">Go to cart to checkout</a></p>
+                    {% endif %}
+                </div>
+
+                {% if session.get('user') == 'admin' %}
+                    <div class="member-specials">
+                        <h3>Admin Security Snapshot</h3>
+
+                        <h4>Recent logins (privacy / retention)</h4>
+                        {% if recent_login_events %}
+                            <ul>
+                                {% for line in recent_login_events %}
+                                    <li style="font-family: monospace; font-size: 12px;">{{ line }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>No login events found.</p>
+                        {% endif %}
+
+                        <h4>Possible tampered orders (integrity)</h4>
+                        <p>Orders where <strong>Client Total</strong> != <strong>Server Total</strong>: <strong>{{ tampered_orders_count }}</strong></p>
+                        {% if recent_tampered_orders %}
+                            <ul>
+                                {% for o in recent_tampered_orders %}
+                                    <li>
+                                        <a href="{{ url_for('view_order', order_id=o[0]) }}">Order #{{ o[0] }}</a>
+                                        — {{ o[2] }} — ${{ "%.2f"|format(o[3]) }} vs ${{ "%.2f"|format(o[4]) }}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>No mismatched totals detected.</p>
+                        {% endif %}
+
+                        <h4>All orders (excessive data exposure)</h4>
+                        {% if recent_all_orders_excessive %}
+                            <ul>
+                                {% for o in recent_all_orders_excessive %}
+                                    <li>
+                                        <strong><a href="{{ url_for('view_order', order_id=o[0]) }}">Order #{{ o[0] }}</a></strong>
+                                        <div style="font-family: monospace; font-size: 12px;">
+                                            created_at={{ o[1] }} | user_id={{ o[2] }} | username={{ o[3] }} | email={{ o[4] }}
+                                        </div>
+                                        <div style="font-family: monospace; font-size: 12px;">
+                                            full_name={{ o[5] }} | phone={{ o[6] }} | credit_card={{ o[7] }}
+                                        </div>
+                                        <div style="font-family: monospace; font-size: 12px;">
+                                            profile_address={{ o[8] }} | delivery_address={{ o[9] }}
+                                        </div>
+                                        <div style="font-family: monospace; font-size: 12px;">
+                                            notes={{ o[10] }} | coupon={{ o[11] }} | status={{ o[14] }}
+                                        </div>
+                                        <div style="font-family: monospace; font-size: 12px;">
+                                            client_total=${{ "%.2f"|format(o[12] or 0) }} | server_total=${{ "%.2f"|format(o[13] or 0) }}
+                                        </div>
+                                        <div style="font-family: monospace; font-size: 12px;">
+                                            cart_json={{ o[15] }}
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p>No orders found.</p>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="member-specials">
+                        <h3>Member-Only Specials</h3>
+                        <ul>
+                            <li>🔥 Buy any large pizza, get garlic bread FREE!</li>
+                            <li>⭐ Double loyalty points this weekend</li>
+                            <li>🎉 25% off on your birthday month</li>
+                        </ul>
+                        <p class="promo-text">Use code: VIPFEB25 at checkout</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <a href="{{ url_for('cart') }}" class="cart-button">VIEW CART</a>
+            <a href="/my-orders" class="cart-button">MY ORDERS</a>
+            <form action="/logout" method="GET">
+                <button type="submit" class="logout-button">LOGOUT</button>
+            </form>
+            {% if session.get('user') == 'admin' %}
+                <a href="/admin" class="manage-pizzas-button">MANAGE PIZZAS</a>
+            {% endif %}
+        {% else %}
+            <div class="form-section">
+                <h2>Login</h2>
+                <form action="/login" method="POST">
+                    <p>Username: <input type="text" name="username"></p>
+                    <p>Password: <input type="password" name="password"></p>
+                    <p><button type="submit" class="login-button">Login</button></p>
+                    <p><a href="/forgot-password">Forgot Password?</a></p>
+                </form>
+                <p>Don't have an account? <a href="{{ url_for('register_page') }}">Register here</a></p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Right Column: Pizza List -->
+    <div class="right-column">
+        <h2>VIP Classic Collection</h2>
+        <div class="pizza-grid">
+            {% for pizza in pizzas %}
+                <div class="pizza-card">
+                    <h3>{{ pizza.name }}</h3>
+                    <p>{{ pizza.description }}</p>
+                    <p class="price">Price: ${{ "%.2f"|format(pizza.price) }}</p>
+                    <img src="{{ pizza.image }}" alt="Pizza Image">
+                    <form method="POST" action="/add_to_cart">
+                        <button type="submit" name="pizza_name" value="{{ pizza.name }}">Add</button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

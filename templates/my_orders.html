@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}VIP - My Orders{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="left-column">
+        <h1 class="admin-title">My Orders</h1>
+        <a href="/" class="back-link">Back to Home</a>
+
+        <div class="form-section admin-form">
+            <h2>Actions</h2>
+            <div class="cart-actions">
+                <button type="button" onclick="window.location.href='{{ url_for('cart') }}'" class="continue-shopping">View Cart</button>
+                <button type="button" onclick="window.location.href='/'" class="checkout-button">Continue Shopping</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="right-column">
+        <h2 class="manage-title">Orders</h2>
+        <ul class="pizza-list">
+            {% for row in orders %}
+                <li class="pizza-item">
+                    <div class="cart-item-content">
+                        <div class="cart-item-details">
+                            <h3>Order #{{ row[0] }}</h3>
+                            <p><strong>Created:</strong> {{ row[1] }}</p>
+                            <p><strong>Username:</strong> {{ row[2] }}</p>
+                            <p><strong>Client Total:</strong> ${{ "%.2f"|format(row[3] or 0) }}</p>
+                            <p><strong>Server Total:</strong> ${{ "%.2f"|format(row[4] or 0) }}</p>
+                            <p><strong>Status:</strong> {{ row[5] }}</p>
+                            <p><a href="{{ url_for('view_order', order_id=row[0]) }}">View receipt</a></p>
+                        </div>
+                    </div>
+                </li>
+            {% else %}
+                <li class="pizza-item empty-cart">
+                    <p>No orders found.</p>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

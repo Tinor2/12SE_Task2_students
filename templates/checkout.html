@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}VIP - Checkout{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="left-column">
+        <h1 class="admin-title">Checkout</h1>
+        <a href="{{ url_for('cart') }}" class="back-link">Back to Cart</a>
+
+        <div class="form-section admin-form">
+            <h2>Checkout Summary</h2>
+            <div class="cart-total">
+                Server Total: $<span id="server-total">{{ "%.2f"|format(server_total) }}</span>
+            </div>
+            <div class="cart-total">
+                Client Total (submitted): $<span id="client-total-display">0.00</span>
+            </div>
+        </div>
+
+        <div class="form-section admin-form">
+            <h2>Order Details</h2>
+            <form method="POST" action="{{ url_for('checkout') }}">
+                <p>Delivery Address:</p>
+                <p><input type="text" name="delivery_address" value="123 Main St"></p>
+
+                <p>Notes:</p>
+                <p><textarea name="notes" rows="3">Leave at the door</textarea></p>
+
+                <p>Coupon Code:</p>
+                <p><input type="text" name="coupon_code" value=""></p>
+
+                <input type="hidden" name="total" id="client-total" value="0">
+
+                <div class="cart-actions">
+                    <button type="button" onclick="window.location.href='{{ url_for('cart') }}'" class="continue-shopping">Back to Cart</button>
+                    <button type="submit" class="checkout-button">Place Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="right-column">
+        <h2 class="manage-title">Cart Items</h2>
+        <ul class="pizza-list">
+            {% for item in cart_items %}
+                <li class="pizza-item cart-item" data-price="{{ item.price }}">
+                    <div class="cart-item-content">
+                        <img src="{{ item.image }}" alt="{{ item.name }}" class="admin-pizza-img">
+                        <div class="cart-item-details">
+                            <h3>{{ item.name }}</h3>
+                            <p>Price: $<span class="item-price">{{ "%.2f"|format(item.price) }}</span></p>
+                            <div class="quantity-control">
+                                <label>Quantity:</label>
+                                <input type="number" class="quantity-input" value="{{ item.quantity }}" min="1" disabled>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            {% else %}
+                <li class="pizza-item empty-cart">
+                    <p>Your cart is empty</p>
+                    <button onclick="window.location.href='/'" class="continue-shopping">Start Shopping</button>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let total = 0;
+        document.querySelectorAll('.cart-item').forEach(item => {
+            const price = parseFloat(item.dataset.price);
+            const qty = parseInt(item.querySelector('.quantity-input').value);
+            total += price * qty;
+        });
+        document.getElementById('client-total').value = total.toFixed(2);
+        document.getElementById('client-total-display').textContent = total.toFixed(2);
+    });
+</script>
+{% endblock %}

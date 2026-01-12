@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}VIP - Login{% endblock %}
+
+{% block content %}
+<div class="container registration-container">
+    <div class="registration-content">
+        <div class="form-section">
+            <h2>Membership Login</h2>
+            <form action="{{ url_for('login', next=next) }}" method="POST">
+                <label>Username:</label>
+                <input type="text" name="username" required><br>
+                <label>Password:</label>
+                <input type="password" name="password" required><br>
+                <button type="submit" class="register-button">Login</button>
+            </form>
+            <p class="login-link">New member? <a href="{{ url_for('register_page') }}">Register here</a></p>
+        </div>
+
+        <div class="benefits-section">
+            <h3>🌟 Members Only Checkout</h3>
+            <div class="benefit-item">
+                <h4>🛒 Checkout Access</h4>
+                <p>You must be logged in to place orders.</p>
+            </div>
+            <div class="benefit-item">
+                <h4>📦 Order Receipts</h4>
+                <p>After checkout you can view your receipt and order details.</p>
+            </div>
+            <div class="benefit-item">
+                <h4>🔐 Security Testing</h4>
+                <p>This site is intentionally vulnerable for learning purposes.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

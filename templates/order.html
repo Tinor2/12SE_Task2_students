@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}VIP - Order {{ order.id }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="left-column">
+        <h1 class="admin-title">Order Receipt</h1>
+        <a href="/" class="back-link">Back to Home</a>
+
+        <div class="form-section admin-form">
+            <h2>Order #{{ order.id }}</h2>
+            <p><strong>Status:</strong> {{ order.status }}</p>
+            <p><strong>Placed At:</strong> {{ order.created_at }}</p>
+            <p><strong>Placed By:</strong> {{ order.username }}</p>
+            <p><strong>Delivery Address:</strong> {{ order.delivery_address }}</p>
+            <p><strong>Coupon Code:</strong> {{ order.coupon_code }}</p>
+            <div class="cart-total">
+                Client Total (submitted): ${{ "%.2f"|format(order.client_total or 0) }}
+            </div>
+            <div class="cart-total">
+                Server Total (calculated): ${{ "%.2f"|format(order.server_total or 0) }}
+            </div>
+        </div>
+
+        <div class="form-section admin-form">
+            <h2>Notes</h2>
+            <div>
+                {{ order.notes | safe }}
+            </div>
+
+            <div class="cart-actions">
+                <button type="button" onclick="window.location.href='/my-orders'" class="continue-shopping">My Orders</button>
+                <button type="button" onclick="window.location.href='/'" class="checkout-button">Continue Shopping</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="right-column">
+        <h2 class="manage-title">Items</h2>
+        <ul class="pizza-list">
+            {% for item in cart_items %}
+                <li class="pizza-item cart-item" data-price="{{ item.price }}">
+                    <div class="cart-item-content">
+                        <img src="{% if item.image and (item.image.startswith('http://') or item.image.startswith('https://') or item.image.startswith('/')) %}{{ item.image }}{% else %}/{{ item.image }}{% endif %}" alt="{{ item.name }}" class="admin-pizza-img">
+                        <div class="cart-item-details">
+                            <h3>{{ item.name }}</h3>
+                            <p>Price: $<span class="item-price">{{ "%.2f"|format(item.price) }}</span></p>
+                            <div class="quantity-control">
+                                <label>Quantity:</label>
+                                <input type="number" class="quantity-input" value="{{ item.quantity }}" min="1" disabled>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            {% else %}
+                <li class="pizza-item empty-cart">
+                    <p>No items recorded for this order.</p>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}
