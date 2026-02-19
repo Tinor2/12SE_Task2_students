@@ -882,4 +882,5 @@ if __name__ == "__main__":
         save_pizzas([])  
     
     init_db()
-    app.run(debug=True)
+    init_db()
+    app.run()
